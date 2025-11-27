@@ -1,0 +1,8 @@
+{
+  "name": "تله‌پرامپتر حرفه‌ای",
+  "description": "Professional Teleprompter with AI script generation, video recording, and live AI assistant capabilities.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
