@@ -1,8 +1,7 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { User } from '../types';
 import { saveUser } from '../services/storageService';
-import { Shield, User as UserIcon, ArrowRight, ArrowLeft, Lock, Mail, AlertCircle, Eye, EyeOff, Download } from 'lucide-react';
+import { Shield, User as UserIcon, ArrowRight, ArrowLeft, Lock, Mail, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocalization } from '../contexts/LocalizationContext';
 
@@ -17,26 +16,6 @@ const Login: React.FC<Props> = ({ onLogin }) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-
-  useEffect(() => {
-    window.addEventListener('beforeinstallprompt', (e) => {
-      // Prevent the mini-infobar from appearing on mobile
-      e.preventDefault();
-      // Stash the event so it can be triggered later.
-      setDeferredPrompt(e);
-    });
-  }, []);
-
-  const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-    // Show the install prompt
-    deferredPrompt.prompt();
-    // Wait for the user to respond to the prompt
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log(`User response to the install prompt: ${outcome}`);
-    setDeferredPrompt(null);
-  };
 
   const handleAdminLogin = () => {
     if (email.toLowerCase() === 'azadazerakhsh@gmail.com' && password === 'aa3724585') {
@@ -116,18 +95,6 @@ const Login: React.FC<Props> = ({ onLogin }) => {
                 <Shield size={18} />
                 {t('login.admin_btn')}
               </button>
-
-              {deferredPrompt && (
-                <motion.button
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  onClick={handleInstallClick}
-                  className="w-full mt-4 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
-                >
-                  <Download size={18} />
-                  نصب اپلیکیشن اندروید
-                </motion.button>
-              )}
             </motion.div>
           ) : (
             <motion.div 

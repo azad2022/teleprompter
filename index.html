@@ -2,16 +2,17 @@
 <html lang="fa" dir="rtl">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#0f172a" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="description" content="Professional Teleprompter and Content Creator Studio" />
     
-    <link rel="manifest" href="./manifest.json" />
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3063/3063822.png" />
-
+    <!-- Android Native Settings -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="BloggerShow">
+    
+    <!-- Manifest removed for native APK build to prevent PWA prompts -->
+    <!-- <link rel="manifest" href="./manifest.json" /> -->
+    
     <title>BloggerShow | بلاگرشو</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -19,7 +20,10 @@
       
       * {
         box-sizing: border-box;
+        /* Disable highlight color on tap for native feel */
         -webkit-tap-highlight-color: transparent;
+        /* Disable long-press context menu on images/links */
+        -webkit-touch-callout: none;
       }
 
       body {
@@ -36,10 +40,11 @@
         touch-action: manipulation;
       }
       
-      /* Re-enable text selection for inputs */
+      /* Re-enable text selection for inputs only */
       input, textarea, [contenteditable] {
         user-select: text;
         -webkit-user-select: text;
+        -webkit-touch-callout: default; /* Allow copy/paste menu */
       }
       
       /* Dynamic Font Class based on Language */
@@ -48,7 +53,7 @@
       }
 
       h1, h2, h3, h4, h5, h6 {
-        font-family: 'Lalezar', 'Poppins', cursive; /* Professional TV/Cinema font */
+        font-family: 'Lalezar', 'Poppins', cursive;
         letter-spacing: 0.5px;
       }
       
@@ -59,8 +64,8 @@
 
       /* Custom Scrollbar */
       ::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
+        width: 4px; /* Thinner for mobile */
+        height: 4px;
       }
       ::-webkit-scrollbar-track {
         background: transparent; 
@@ -74,7 +79,7 @@
       }
       
       .glass-panel {
-        background: rgba(15, 23, 42, 0.6); /* Darker for better contrast */
+        background: rgba(15, 23, 42, 0.6);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         border: 1px solid rgba(255, 255, 255, 0.1);
