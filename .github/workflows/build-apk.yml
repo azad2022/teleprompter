@@ -1,21 +1,35 @@
-name: Build APK
+name: Build Real APK
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
 
 jobs:
-  build:
+  build-android:
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-      - run: |
-          npm install
-          npm run build
-          cd dist
-          zip -r ../my-app.apk .
-      - uses: actions/upload-artifact@v4
-        with:
-          name: android-app
-          path: my-app.apk
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies and build
+      run: |
+        npm install
+        npm run build
+        
+    - name: Install PWA to APK tool
+      run: npm install -g pwa2apk
+      
+    - name: Convert PWA to real APK
+      run: |
+        pwa2apk --url https://ai.studio/apps/driver17k9UUSE882MHeHHFWKpo91X0igabdfs --output teleprompter.apk
+      
+    - name: Upload real APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: android-apk
+        path: teleprompter.apk
