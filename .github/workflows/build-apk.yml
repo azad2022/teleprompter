@@ -1,10 +1,10 @@
-name: Build Real APK
+name: Deploy and Build APK
 
 on:
   workflow_dispatch:
 
 jobs:
-  build-android:
+  deploy-and-build:
     runs-on: ubuntu-latest
     
     steps:
@@ -16,20 +16,18 @@ jobs:
       with:
         node-version: '18'
         
-    - name: Install dependencies and build
+    - name: Install and build
       run: |
         npm install
         npm run build
         
-    - name: Install PWA to APK tool
-      run: npm install -g pwa2apk
+    - name: Setup Pages
+      uses: actions/configure-pages@v3
       
-    - name: Convert PWA to real APK
-      run: |
-        pwa2apk --url https://ai.studio/apps/driver17k9UUSE882MHeHHFWKpo91X0igabdfs --output teleprompter.apk
-      
-    - name: Upload real APK
-      uses: actions/upload-artifact@v4
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v2
       with:
-        name: android-apk
-        path: teleprompter.apk
+        path: './dist'
+        
+    - name: Deploy to GitHub Pages
+      uses: actions/deploy-pages@v2
