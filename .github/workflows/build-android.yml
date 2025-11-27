@@ -21,22 +21,33 @@ jobs:
     - name: Install dependencies
       run: npm install
       
-    - name: Build web assets
+    - name: Build project
       run: npm run build
       
-    - name: Convert to Android Native
+    - name: Setup Android environment
       run: |
-        # اینجا از ابزارهای تبدیل به اندروید نیتیو استفاده میشود
-        # نه ابزارهای PWA
-        echo "Building native Android APK..."
+        # نصب Capacitor برای ساخت APK واقعی
+        npm install @capacitor/cli @capacitor/core @capacitor/android
+        npx cap init Teleprompter com.teleprompter.app --web-dir dist
+        npx cap add android
         
-    - name: Generate signed APK
+    - name: Copy web assets to Android project
+      run: npx cap sync android
+      
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: Build Android APK
       run: |
-        # ساخت APK امضا شده برای کافه بازار
-        # این قسمت نیاز به تنظیمات signing دارد
-        
-    - name: Upload APK artifact
+        cd android
+        chmod +x ./gradlew
+        ./gradlew assembleDebug
+      
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: native-android-apk
-        path: ./*.apk
+        path: android/app/build/outputs/apk/debug/app-debug.apk
