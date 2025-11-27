@@ -13,41 +13,50 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
+    - name: Debug - List files
+      run: ls -la
+      
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
         
     - name: Install dependencies
-      run: npm install
+      run: |
+        npm install
+        npm list
       
     - name: Build project
-      run: npm run build
-      
-    - name: Setup Android environment
       run: |
-        # نصب Capacitor برای ساخت APK واقعی
+        echo "Building project..."
+        npm run build
+        ls -la dist/
+      
+    - name: Install Capacitor
+      run: |
         npm install @capacitor/cli @capacitor/core @capacitor/android
         npx cap init Teleprompter com.teleprompter.app --web-dir dist
         npx cap add android
-        
-    - name: Copy web assets to Android project
-      run: npx cap sync android
       
-    - name: Setup Java
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        
-    - name: Build Android APK
+    - name: Debug - Check Android project
+      run: |
+        ls -la android/
+        ls -la android/app/
+      
+    - name: Build APK with debug info
       run: |
         cd android
         chmod +x ./gradlew
-        ./gradlew assembleDebug
+        ./gradlew assembleDebug --stacktrace --info
+      
+    - name: Find APK files
+      run: |
+        find . -name "*.apk" -type f
       
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: native-android-apk
-        path: android/app/build/outputs/apk/debug/app-debug.apk
+        name: android-apk
+        path: |
+          android/app/build/outputs/apk/debug/*.apk
+          android/app/build/outputs/apk/release/*.apk
