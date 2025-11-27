@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Send, ShieldAlert, Settings, Bell, Database } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, Send, ShieldAlert, Settings, Bell, Database, Cpu, Save } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { getSystemApiConfig, saveSystemApiConfig } from '../services/storageService';
+import { ApiConfig } from '../types';
 
 interface Props {
   onBack: () => void;
@@ -9,11 +11,52 @@ interface Props {
 const AdminPanel: React.FC<Props> = ({ onBack }) => {
   const [notification, setNotification] = useState('');
   
+  // System API Config State
+  const [sysApiProvider, setSysApiProvider] = useState<string>('deepseek');
+  const [sysApiKey, setSysApiKey] = useState('');
+  const [sysApiBase, setSysApiBase] = useState('');
+  const [sysApiModel, setSysApiModel] = useState('');
+
+  useEffect(() => {
+    const existing = getSystemApiConfig();
+    if (existing) {
+        setSysApiProvider(existing.provider);
+        setSysApiKey(existing.apiKey);
+        setSysApiBase(existing.baseUrl || '');
+        setSysApiModel(existing.modelName || '');
+    } else {
+        // Default preset
+        setSysApiProvider('deepseek');
+        setSysApiKey('sk-mwY8X2Ez1Vy01uT2EfuNqKMMTLMUz5qZuSo0Eql3wXsp2aP6');
+        setSysApiBase('https://api.gapapi.com/v1');
+        setSysApiModel('deepseek-chat');
+    }
+  }, []);
+
   const handleSendNotification = () => {
     if (!notification) return;
     // Simulation of FCM broadcast
     alert(`پیام "${notification}" به تمام کاربران ارسال شد.`);
     setNotification('');
+  };
+
+  const handleSaveSystemApi = () => {
+    const cleanApiKey = sysApiKey.trim();
+    if (!cleanApiKey) {
+        alert('لطفا API Key را وارد کنید');
+        return;
+    }
+    const config: ApiConfig = {
+        id: 'system_default',
+        provider: sysApiProvider as any,
+        name: 'System Default',
+        apiKey: cleanApiKey,
+        baseUrl: sysApiBase.trim(),
+        modelName: sysApiModel.trim(),
+        isDefault: true
+    };
+    saveSystemApiConfig(config);
+    alert('تنظیمات پیش‌فرض هوش مصنوعی با موفقیت ذخیره شد.');
   };
 
   return (
@@ -38,13 +81,82 @@ const AdminPanel: React.FC<Props> = ({ onBack }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
+          {/* AI System Config (New Section) */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="col-span-1 md:col-span-2 bg-slate-900 border border-white/10 rounded-2xl p-6"
+          >
+             <div className="flex items-center gap-3 mb-6 text-blue-400 border-b border-white/5 pb-4">
+              <Cpu size={24} />
+              <h2 className="text-xl font-bold">تنظیمات پیش‌فرض هوش مصنوعی</h2>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                 <div>
+                    <label className="text-slate-400 text-sm mb-1 block">Provider</label>
+                    <select 
+                        value={sysApiProvider}
+                        onChange={(e) => setSysApiProvider(e.target.value)}
+                        className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:border-blue-500 outline-none"
+                    >
+                        <option value="openai">OpenAI</option>
+                        <option value="deepseek">DeepSeek</option>
+                        <option value="gemini">Gemini</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                 </div>
+                 <div>
+                    <label className="text-slate-400 text-sm mb-1 block">Model Name</label>
+                    <input 
+                        type="text" 
+                        value={sysApiModel}
+                        onChange={(e) => setSysApiModel(e.target.value)}
+                        placeholder="e.g. gpt-4 or deepseek-chat"
+                        className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:border-blue-500 outline-none dir-ltr font-mono"
+                    />
+                 </div>
+            </div>
+
+            <div className="mb-4">
+                <label className="text-slate-400 text-sm mb-1 block">Base URL</label>
+                <input 
+                    type="text" 
+                    value={sysApiBase}
+                    onChange={(e) => setSysApiBase(e.target.value)}
+                    placeholder="https://api.openai.com/v1"
+                    className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:border-blue-500 outline-none dir-ltr font-mono"
+                />
+            </div>
+
+             <div className="mb-6">
+                <label className="text-slate-400 text-sm mb-1 block">API Key</label>
+                <input 
+                    type="password" 
+                    value={sysApiKey}
+                    onChange={(e) => setSysApiKey(e.target.value)}
+                    placeholder="sk-..."
+                    className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white focus:border-blue-500 outline-none dir-ltr font-mono"
+                />
+            </div>
+
+            <button 
+              onClick={handleSaveSystemApi}
+              className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg"
+            >
+              <Save size={18} />
+              ذخیره تنظیمات پیش‌فرض
+            </button>
+          </motion.div>
+
           {/* Push Notifications */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
             className="bg-slate-900 border border-white/10 rounded-2xl p-6"
           >
-            <div className="flex items-center gap-3 mb-4 text-blue-400">
+            <div className="flex items-center gap-3 mb-4 text-purple-400">
               <Bell size={24} />
               <h2 className="text-xl font-bold">ارسال اعلان عمومی</h2>
             </div>
@@ -52,11 +164,11 @@ const AdminPanel: React.FC<Props> = ({ onBack }) => {
               value={notification}
               onChange={(e) => setNotification(e.target.value)}
               placeholder="متن پیام برای تمام کاربران..."
-              className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white h-32 resize-none mb-4 focus:border-blue-500 outline-none"
+              className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white h-32 resize-none mb-4 focus:border-purple-500 outline-none"
             />
             <button 
               onClick={handleSendNotification}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors"
+              className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors"
             >
               <Send size={18} />
               ارسال پوش نوتیفیکیشن
@@ -67,7 +179,7 @@ const AdminPanel: React.FC<Props> = ({ onBack }) => {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+            transition={{ delay: 0.2 }}
             className="bg-slate-900 border border-white/10 rounded-2xl p-6"
           >
             <div className="flex items-center gap-3 mb-4 text-emerald-400">
@@ -94,10 +206,10 @@ const AdminPanel: React.FC<Props> = ({ onBack }) => {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: 0.3 }}
             className="col-span-1 md:col-span-2 bg-slate-900 border border-white/10 rounded-2xl p-6"
           >
-             <div className="flex items-center gap-3 mb-4 text-purple-400">
+             <div className="flex items-center gap-3 mb-4 text-orange-400">
               <Settings size={24} />
               <h2 className="text-xl font-bold">تنظیمات اضطراری</h2>
             </div>

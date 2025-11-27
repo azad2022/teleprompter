@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
 import { generateScript } from '../services/geminiService';
 import { Script } from '../types';
-import { Wand2, Loader2, Save, ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
+import { Wand2, Loader2, Save, ArrowLeft, ArrowRight, Sparkles, PenTool, Type } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { saveScript } from '../services/storageService';
 import { motion } from 'framer-motion';
@@ -19,6 +20,7 @@ const ScriptGenerator: React.FC<Props> = ({ onBack, onScriptCreated }) => {
   const [duration, setDuration] = useState('2 minutes');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedText, setGeneratedText] = useState('');
+  const [showEditor, setShowEditor] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleGenerate = async () => {
@@ -28,6 +30,7 @@ const ScriptGenerator: React.FC<Props> = ({ onBack, onScriptCreated }) => {
     try {
       const text = await generateScript({ topic, tone, duration });
       setGeneratedText(text);
+      setShowEditor(true);
     } catch (err: any) {
       setError(err.message || t('generator.error_gen'));
     } finally {
@@ -35,14 +38,21 @@ const ScriptGenerator: React.FC<Props> = ({ onBack, onScriptCreated }) => {
     }
   };
 
+  const handleManual = () => {
+    setTopic('');
+    setGeneratedText('');
+    setShowEditor(true);
+  };
+
   const handleSave = () => {
     if (!generatedText) return;
+    const titleToSave = topic.trim() || 'Untitled Script';
     const newScript: Script = {
       id: uuidv4(),
-      title: topic || 'Untitled',
+      title: titleToSave,
       content: generatedText,
       createdAt: Date.now(),
-      tags: ['AI Generated']
+      tags: ['Script']
     };
     saveScript(newScript);
     onScriptCreated(newScript);
@@ -73,7 +83,7 @@ const ScriptGenerator: React.FC<Props> = ({ onBack, onScriptCreated }) => {
         </div>
 
         {/* Form */}
-        {!generatedText ? (
+        {!showEditor ? (
           <div className="space-y-6 glass-panel p-8 rounded-3xl shadow-2xl bg-black/60">
             <div>
               <label className="block text-lg font-medium text-purple-200 mb-2" style={{ fontFamily: 'Lalezar, Poppins, cursive' }}>{t('generator.topic_label')}</label>
@@ -148,35 +158,73 @@ const ScriptGenerator: React.FC<Props> = ({ onBack, onScriptCreated }) => {
                 </>
               )}
             </button>
+
+             <div className="flex items-center gap-4 py-2">
+                 <div className="h-px bg-white/10 flex-1"></div>
+                 <span className="text-white/40 text-sm font-bold">OR</span>
+                 <div className="h-px bg-white/10 flex-1"></div>
+             </div>
+
+             <button
+              onClick={handleManual}
+              disabled={isGenerating}
+              className="w-full py-4 rounded-xl font-bold flex items-center justify-center gap-3 text-lg transition-all border border-white/10 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white"
+            >
+                <PenTool size={20} />
+                {t('generator.manual_btn')}
+            </button>
           </div>
         ) : (
-          /* Result View */
+          /* Editor View */
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="space-y-6"
           >
             <div className="glass-panel p-1 rounded-3xl shadow-xl bg-black/60">
-              <div className="bg-black/40 rounded-[22px] p-6">
-                 <label className="block text-lg font-medium text-purple-200 mb-3 px-2" style={{ fontFamily: 'Lalezar, Poppins, cursive' }}>{t('generator.result_label')}</label>
-                <textarea
-                  value={generatedText}
-                  onChange={(e) => setGeneratedText(e.target.value)}
-                  className="w-full h-96 bg-transparent text-white text-lg leading-loose resize-none outline-none custom-scrollbar p-2 font-medium"
-                />
+              <div className="bg-black/40 rounded-[22px] p-6 space-y-4">
+                 
+                 {/* Title Input */}
+                 <div>
+                    <label className="block text-sm font-bold text-purple-200 mb-2 flex items-center gap-2">
+                        <Type size={14} />
+                        {t('generator.topic_label')}
+                    </label>
+                    <input 
+                        type="text"
+                        value={topic}
+                        onChange={(e) => setTopic(e.target.value)}
+                        placeholder={t('generator.title_input_placeholder')}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white placeholder-white/30 outline-none focus:border-purple-500/50 transition-colors font-bold text-lg"
+                    />
+                 </div>
+
+                 {/* Content Input */}
+                 <div className="flex-1">
+                    <label className="block text-sm font-bold text-purple-200 mb-2 flex items-center gap-2">
+                         <PenTool size={14} />
+                         {t('generator.result_label')}
+                    </label>
+                    <textarea
+                    value={generatedText}
+                    onChange={(e) => setGeneratedText(e.target.value)}
+                    className="w-full h-96 bg-transparent text-white text-lg leading-loose resize-none outline-none custom-scrollbar p-2 font-medium"
+                    />
+                 </div>
               </div>
             </div>
             
             <div className="flex gap-4">
                <button
-                onClick={() => setGeneratedText('')}
+                onClick={() => setShowEditor(false)}
                 className="flex-1 py-4 bg-white/10 hover:bg-white/20 rounded-xl font-bold text-white transition-colors border border-white/10"
               >
                 {t('generator.retry_btn')}
               </button>
               <button
                 onClick={handleSave}
-                className="flex-1 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-xl font-bold text-white shadow-lg flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
+                disabled={!generatedText.trim()}
+                className={`flex-1 py-4 rounded-xl font-bold text-white shadow-lg flex items-center justify-center gap-2 transition-all ${!generatedText.trim() ? 'bg-slate-700 opacity-50 cursor-not-allowed' : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 hover:scale-[1.02]'}`}
               >
                 <Save />
                 {t('generator.save_btn')}

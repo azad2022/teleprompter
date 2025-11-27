@@ -5,6 +5,7 @@ const ONBOARDING_KEY = 'blogger_onboarding_complete_v2'; // Updated key version
 const TOUR_KEY = 'blogger_tour_complete';
 const USER_KEY = 'teleprompter_user';
 const API_CONFIGS_KEY = 'teleprompter_api_configs';
+const SYSTEM_API_CONFIG_KEY = 'teleprompter_system_api_config';
 const THEME_KEY = 'teleprompter_theme';
 const LANG_KEY = 'blogger_language';
 
@@ -76,6 +77,20 @@ export const getActiveApiConfig = (): ApiConfig | undefined => {
   return configs.find(c => c.isDefault);
 };
 
+// --- System API Config (Admin defined default) ---
+export const saveSystemApiConfig = (config: ApiConfig | null): void => {
+  if (config) {
+    localStorage.setItem(SYSTEM_API_CONFIG_KEY, JSON.stringify(config));
+  } else {
+    localStorage.removeItem(SYSTEM_API_CONFIG_KEY);
+  }
+};
+
+export const getSystemApiConfig = (): ApiConfig | null => {
+  const data = localStorage.getItem(SYSTEM_API_CONFIG_KEY);
+  return data ? JSON.parse(data) : null;
+};
+
 // --- Theme ---
 export const saveTheme = (themeId: ThemeId): void => {
   localStorage.setItem(THEME_KEY, themeId);
@@ -92,4 +107,4 @@ export const saveLanguage = (lang: Language): void => {
 
 export const getLanguage = (): Language => {
   return (localStorage.getItem(LANG_KEY) as Language) || 'fa';
-};
+}

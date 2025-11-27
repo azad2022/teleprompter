@@ -2,12 +2,26 @@
 <html lang="fa" dir="rtl">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="description" content="Professional Teleprompter and Content Creator Studio" />
+    
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3063/3063822.png" />
+
     <title>BloggerShow | بلاگرشو</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@300;400;500;700;900&family=Poppins:wght@300;400;500;700;900&display=swap');
       
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+
       body {
         font-family: 'Vazirmatn', 'Poppins', sans-serif;
         background-color: #0f172a;
@@ -15,6 +29,17 @@
         overflow: hidden;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
+        /* Native App Feel: Disable text selection and pull-to-refresh */
+        user-select: none;
+        -webkit-user-select: none;
+        overscroll-behavior-y: none;
+        touch-action: manipulation;
+      }
+      
+      /* Re-enable text selection for inputs */
+      input, textarea, [contenteditable] {
+        user-select: text;
+        -webkit-user-select: text;
       }
       
       /* Dynamic Font Class based on Language */

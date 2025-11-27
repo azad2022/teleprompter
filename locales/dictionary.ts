@@ -1,3 +1,4 @@
+
 export const dictionary = {
   fa: {
     app_name: "بلاگرشو",
@@ -52,15 +53,17 @@ export const dictionary = {
       language_select: "انتخاب زبان"
     },
     generator: {
-      title: "تولید اسکریپت هوشمند",
+      title: "تولید اسکریپت",
       topic_label: "موضوع محتوا",
       topic_placeholder: "مثلاً: بررسی آیفون ۱۵...",
       tone_label: "لحن نوشتار",
       duration_label: "مدت زمان",
       generate_btn: "تولید متن با هوش مصنوعی",
+      manual_btn: "نوشتن دستی اسکریپت",
       thinking: "در حال تفکر...",
-      result_label: "متن تولید شده",
-      retry_btn: "تلاش مجدد",
+      result_label: "متن اسکریپت",
+      title_input_placeholder: "عنوان اسکریپت خود را وارد کنید...",
+      retry_btn: "بازگشت",
       save_btn: "ذخیره و استفاده",
       error_gen: "خطا در تولید محتوا"
     },
@@ -69,7 +72,8 @@ export const dictionary = {
       tabs: {
         visual: "نمایش",
         text: "متن",
-        color: "رنگ‌ها"
+        color: "رنگ‌ها",
+        camera: "دوربین"
       },
       speed: "سرعت",
       mirror: "حالت آینه‌ای",
@@ -79,7 +83,13 @@ export const dictionary = {
       pip: "پنجره شناور",
       reset: "بازنشانی",
       pip_iframe_error: "قابلیت پنجره-در-پنجره به دلیل سیاست‌های امنیتی مرورگر در این محیط در دسترس نیست.",
-      pip_unsupported_error: "مرورگر شما از قابلیت پنجره-در-پنجره پشتیبانی نمی‌کند."
+      pip_unsupported_error: "مرورگر شما از قابلیت پنجره-در-پنجره پشتیبانی نمی‌کند.",
+      brightness: "روشنایی",
+      contrast: "کنتراست",
+      zoom: "زوم",
+      camera_flip: "آینه کردن دوربین",
+      camera_warning: "برای مشاهده تغییرات، دوربین را روشن کنید.",
+      camera_indicator: "دوربین فعال"
     },
     login: {
       guest_btn: "ورود مهمان",
@@ -145,15 +155,17 @@ export const dictionary = {
       language_select: "Select Language"
     },
     generator: {
-      title: "AI Script Generator",
+      title: "Script Generator",
       topic_label: "Content Topic",
       topic_placeholder: "e.g., iPhone 15 Review...",
       tone_label: "Tone",
       duration_label: "Duration",
       generate_btn: "Generate with AI",
+      manual_btn: "Write Manually",
       thinking: "Thinking...",
-      result_label: "Generated Script",
-      retry_btn: "Retry",
+      result_label: "Script Content",
+      title_input_placeholder: "Enter script title...",
+      retry_btn: "Back",
       save_btn: "Save & Use",
       error_gen: "Generation Error"
     },
@@ -162,7 +174,8 @@ export const dictionary = {
       tabs: {
         visual: "Visual",
         text: "Text",
-        color: "Colors"
+        color: "Colors",
+        camera: "Camera"
       },
       speed: "Speed",
       mirror: "Mirror Mode",
@@ -172,7 +185,13 @@ export const dictionary = {
       pip: "Floating Window",
       reset: "Reset",
       pip_iframe_error: "Picture-in-Picture is unavailable in embedded views due to browser security policies.",
-      pip_unsupported_error: "Your browser does not support the Picture-in-Picture feature."
+      pip_unsupported_error: "Your browser does not support the Picture-in-Picture feature.",
+      brightness: "Brightness",
+      contrast: "Contrast",
+      zoom: "Zoom",
+      camera_flip: "Flip Camera",
+      camera_warning: "Enable camera to see changes.",
+      camera_indicator: "Camera Active"
     },
     login: {
       guest_btn: "Guest Entry",

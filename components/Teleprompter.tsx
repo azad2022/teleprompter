@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Script, TeleprompterSettings } from '../types';
 import { saveScript } from '../services/storageService';
@@ -21,7 +22,8 @@ import {
   Palette,
   Layout,
   RefreshCcw,
-  X
+  X,
+  Camera
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocalization } from '../contexts/LocalizationContext';
@@ -51,12 +53,16 @@ const Teleprompter: React.FC<Props> = ({ script, onExit }) => {
     lineHeight: script.lastUsedSettings?.lineHeight ?? 1.8,
     fontFamily: script.lastUsedSettings?.fontFamily ?? 'Vazirmatn',
     customBackgroundColor: script.lastUsedSettings?.customBackgroundColor ?? '',
-    customTextColor: script.lastUsedSettings?.customTextColor ?? ''
+    customTextColor: script.lastUsedSettings?.customTextColor ?? '',
+    cameraBrightness: script.lastUsedSettings?.cameraBrightness ?? 100,
+    cameraContrast: script.lastUsedSettings?.cameraContrast ?? 100,
+    cameraZoom: script.lastUsedSettings?.cameraZoom ?? 1,
+    cameraMirrored: script.lastUsedSettings?.cameraMirrored ?? true,
   });
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [settingsTab, setSettingsTab] = useState<'visual' | 'text' | 'color'>('visual');
+  const [settingsTab, setSettingsTab] = useState<'visual' | 'text' | 'color' | 'camera'>('visual');
   const [showCamera, setShowCamera] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
   
@@ -153,7 +159,11 @@ const Teleprompter: React.FC<Props> = ({ script, onExit }) => {
         lineHeight: 1.8,
         fontFamily: 'Vazirmatn',
         customBackgroundColor: '',
-        customTextColor: ''
+        customTextColor: '',
+        cameraBrightness: 100,
+        cameraContrast: 100,
+        cameraZoom: 1,
+        cameraMirrored: true,
     });
   };
 
@@ -280,7 +290,7 @@ const Teleprompter: React.FC<Props> = ({ script, onExit }) => {
 
   return (
     <div 
-      className="w-full h-full relative flex flex-col transition-colors duration-500"
+      className={`w-full h-full relative flex flex-col transition-colors duration-500 ${showCamera ? 'ring-4 ring-inset ring-red-500/20' : ''}`}
       style={{ backgroundColor: bgColor, color: textColor }}
     >
       
@@ -326,13 +336,32 @@ const Teleprompter: React.FC<Props> = ({ script, onExit }) => {
         
         {/* Camera Overlay */}
         {showCamera && (
-          <div className="absolute inset-0 z-0 opacity-50 pointer-events-none">
-            <Webcam 
-              audio={false}
-              className="w-full h-full object-cover"
-              mirrored={true}
-            />
+          <div className="absolute inset-0 z-0 opacity-50 pointer-events-none overflow-hidden">
+             <div style={{
+                 width: '100%',
+                 height: '100%',
+                 filter: `brightness(${settings.cameraBrightness ?? 100}%) contrast(${settings.cameraContrast ?? 100}%)`,
+                 transform: `scale(${settings.cameraZoom ?? 1})`,
+                 transformOrigin: 'center center',
+                 transition: 'all 0.2s ease-out'
+             }}>
+                <Webcam 
+                  audio={false}
+                  className="w-full h-full object-cover"
+                  mirrored={settings.cameraMirrored ?? true}
+                />
+            </div>
           </div>
+        )}
+
+        {/* Camera Active Indicator Badge */}
+        {showCamera && (
+            <div className={`absolute top-24 ${dir === 'rtl' ? 'left-6' : 'right-6'} z-10 pointer-events-none animate-in fade-in zoom-in duration-300`}>
+                <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-red-500/50 shadow-lg">
+                    <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
+                    <span className="text-white text-[10px] font-bold uppercase tracking-widest">{t('teleprompter.camera_indicator')}</span>
+                </div>
+            </div>
         )}
 
         {/* Scroll Area */}
@@ -450,6 +479,15 @@ const Teleprompter: React.FC<Props> = ({ script, onExit }) => {
                    <div className="flex flex-col items-center gap-1">
                      <Palette size={18} />
                      {t('teleprompter.tabs.color')}
+                  </div>
+                </button>
+                <button 
+                  onClick={() => setSettingsTab('camera')}
+                  className={`flex-1 py-4 text-sm font-bold transition-colors ${settingsTab === 'camera' ? 'bg-white/10 text-white border-b-2 border-blue-500' : 'text-slate-400 hover:text-white'}`}
+                >
+                   <div className="flex flex-col items-center gap-1">
+                     <Camera size={18} />
+                     {t('teleprompter.tabs.camera')}
                   </div>
                 </button>
              </div>
@@ -598,6 +636,72 @@ const Teleprompter: React.FC<Props> = ({ script, onExit }) => {
                                />
                             </div>
                          </div>
+                      </div>
+                   </div>
+                )}
+
+                {/* Camera Settings */}
+                {settingsTab === 'camera' && (
+                   <div className="space-y-8 animate-in fade-in slide-in-from-right-4">
+                      {!showCamera && (
+                        <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl text-yellow-200 text-sm mb-4">
+                           {t('teleprompter.camera_warning')}
+                        </div>
+                      )}
+                      
+                      <div className="space-y-3">
+                         <button 
+                           onClick={() => setSettings({...settings, cameraMirrored: !settings.cameraMirrored})}
+                           className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all ${settings.cameraMirrored ? 'bg-blue-600/20 border-blue-500 text-blue-200' : 'bg-white/5 border-white/10 text-slate-400'}`}
+                         >
+                            <span className="flex items-center gap-2 font-bold text-sm"><FlipHorizontal size={18}/> {t('teleprompter.camera_flip')}</span>
+                            <div className={`w-10 h-5 rounded-full relative transition-colors ${settings.cameraMirrored ? 'bg-blue-500' : 'bg-slate-600'}`}>
+                               <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${settings.cameraMirrored ? 'left-6' : 'left-1'}`} />
+                            </div>
+                         </button>
+                      </div>
+
+                      <div className="space-y-3">
+                        <label className="flex items-center gap-2 text-blue-300 font-bold text-sm">
+                           {t('teleprompter.brightness')} ({settings.cameraBrightness}%)
+                        </label>
+                        <input 
+                           type="range" 
+                           min="50" 
+                           max="200" 
+                           value={settings.cameraBrightness} 
+                           onChange={(e) => setSettings({...settings, cameraBrightness: parseInt(e.target.value)})}
+                           className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                        />
+                      </div>
+
+                      <div className="space-y-3">
+                        <label className="flex items-center gap-2 text-blue-300 font-bold text-sm">
+                           {t('teleprompter.contrast')} ({settings.cameraContrast}%)
+                        </label>
+                        <input 
+                           type="range" 
+                           min="50" 
+                           max="200" 
+                           value={settings.cameraContrast} 
+                           onChange={(e) => setSettings({...settings, cameraContrast: parseInt(e.target.value)})}
+                           className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                        />
+                      </div>
+
+                      <div className="space-y-3">
+                        <label className="flex items-center gap-2 text-blue-300 font-bold text-sm">
+                           {t('teleprompter.zoom')} ({settings.cameraZoom}x)
+                        </label>
+                        <input 
+                           type="range" 
+                           min="1" 
+                           max="3" 
+                           step="0.1"
+                           value={settings.cameraZoom} 
+                           onChange={(e) => setSettings({...settings, cameraZoom: parseFloat(e.target.value)})}
+                           className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                        />
                       </div>
                    </div>
                 )}

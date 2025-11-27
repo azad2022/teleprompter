@@ -20,6 +20,11 @@ export interface TeleprompterSettings {
   fontFamily: string;
   customBackgroundColor?: string;
   customTextColor?: string;
+  // Camera Settings
+  cameraBrightness?: number; // 100 default
+  cameraContrast?: number; // 100 default
+  cameraZoom?: number; // 1 default
+  cameraMirrored?: boolean; // true default
 }
 
 export enum AppRoute {
