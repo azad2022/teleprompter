@@ -11,10 +11,10 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       
     - name: Setup Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '18'
         
@@ -24,15 +24,16 @@ jobs:
     - name: Build project
       run: npm run build
       
-    - name: Convert PWA to APK
-      uses: cezaraugusto/action-pwa-to-apk@v1
-      with:
-        build-folder: 'dist'
-        app-name: 'Teleprompter App'
-        app-package: 'com.teleprompter.app'
-        
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+      
+    - name: Build APK using TWA
+      run: |
+        npx @bubblewrap/cli init --manifest=https://ai.studio/apps/driver17k9UUSE882MHeHHFWKpo91X0igabdfs/manifest.json
+        npx @bubblewrap/cli build
+      
     - name: Upload APK
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: teleprompter-apk
         path: ./*.apk
