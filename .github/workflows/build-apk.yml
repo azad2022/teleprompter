@@ -1,10 +1,10 @@
-name: Deploy and Build APK
+name: Build Real APK with TWA
 
 on:
   workflow_dispatch:
 
 jobs:
-  deploy-and-build:
+  build-android:
     runs-on: ubuntu-latest
     
     steps:
@@ -16,18 +16,23 @@ jobs:
       with:
         node-version: '18'
         
-    - name: Install and build
+    - name: Install and build project
       run: |
         npm install
         npm run build
         
-    - name: Setup Pages
-      uses: actions/configure-pages@v3
-      
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v2
-      with:
-        path: './dist'
+    - name: Install Bubblewrap (Google's official tool)
+      run: |
+        npm install -g @bubblewrap/cli
+        bubblewrap init --manifest=https://ai.studio/apps/driver17k9UUSE882MHeHHFWKpo91X0igabdfs/manifest.json --directory=./android-app
         
-    - name: Deploy to GitHub Pages
-      uses: actions/deploy-pages@v2
+    - name: Build APK
+      run: |
+        cd android-app
+        bubblewrap build
+        
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: real-android-apk
+        path: android-app/app-release-signed.apk
