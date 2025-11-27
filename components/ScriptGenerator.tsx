@@ -128,6 +128,8 @@ const ScriptGenerator: React.FC<Props> = ({ onBack, onScriptCreated }) => {
                     <option value="1 minute">1 min / ۱ دقیقه</option>
                     <option value="2 minutes">2 min / ۲ دقیقه</option>
                     <option value="5 minutes">5 min / ۵ دقیقه</option>
+                    <option value="30 minutes">30 min / ۳۰ دقیقه</option>
+                    <option value="45 minutes">45 min / ۴۵ دقیقه</option>
                   </select>
                   <div className={`absolute ${dir === 'rtl' ? 'left-4' : 'right-4'} top-1/2 -translate-y-1/2 pointer-events-none text-white/50`}>▼</div>
                 </div>

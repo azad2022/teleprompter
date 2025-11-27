@@ -1,7 +1,8 @@
+
 import React, { useEffect, useState } from 'react';
 import { Script, User, ThemeId, ApiConfig } from '../types';
 import { getScripts, deleteScript, getApiConfigs, saveApiConfigs, hasCompletedTour, setTourComplete } from '../services/storageService';
-import { Trash2, Play, FileText, Calendar, Search, Plus, Mic, LogOut, Settings, Palette, Key, Check, Shield, Globe } from 'lucide-react';
+import { Trash2, Play, FileText, Calendar, Search, Plus, Mic, LogOut, Settings, Palette, Key, Check, Shield, Globe, Image as ImageIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { v4 as uuidv4 } from 'uuid';
 import { useLocalization } from '../contexts/LocalizationContext';
@@ -12,13 +13,14 @@ interface Props {
   onSelect: (script: Script) => void;
   onCreateNew: () => void;
   onLiveAssistant: () => void;
+  onGallery: () => void;
   onLogout: () => void;
   onAdminPanel: () => void;
   currentTheme: ThemeId;
   onThemeChange: (id: ThemeId) => void;
 }
 
-const Library: React.FC<Props> = ({ user, onSelect, onCreateNew, onLiveAssistant, onLogout, onAdminPanel, currentTheme, onThemeChange }) => {
+const Library: React.FC<Props> = ({ user, onSelect, onCreateNew, onLiveAssistant, onGallery, onLogout, onAdminPanel, currentTheme, onThemeChange }) => {
   const { t, language, setLanguage } = useLocalization();
   const [scripts, setScripts] = useState<Script[]>([]);
   const [search, setSearch] = useState('');
@@ -139,6 +141,14 @@ const Library: React.FC<Props> = ({ user, onSelect, onCreateNew, onLiveAssistant
             >
               <Settings size={20} />
               <span className="hidden md:inline">{t('library.settings_btn')}</span>
+            </button>
+
+             <button 
+              onClick={onGallery}
+              className="flex items-center gap-2 bg-purple-600/20 hover:bg-purple-600/40 text-purple-200 border border-purple-500/30 px-4 py-3 rounded-xl font-bold transition-all"
+            >
+              <ImageIcon size={20} />
+              <span className="hidden md:inline">{t('library.gallery_btn')}</span>
             </button>
 
              <button 
@@ -284,11 +294,12 @@ const Library: React.FC<Props> = ({ user, onSelect, onCreateNew, onLiveAssistant
                         { id: 'creative_purple', name: 'Creative Purple', bg: 'bg-gradient-to-br from-[#2E3192] to-[#1BFFFF]' },
                         { id: 'energy_orange', name: 'Energy Orange', bg: 'bg-gradient-to-br from-[#FF416C] to-[#FF4B2B]' },
                         { id: 'minimal_grey', name: 'Minimal Grey', bg: 'bg-gradient-to-br from-[#232526] to-[#414345]' },
+                        { id: 'true_dark', name: 'True Dark / تاریک مطلق', bg: 'bg-black' },
                      ].map((t) => (
                        <button
                         key={t.id}
                         onClick={() => onThemeChange(t.id as ThemeId)}
-                        className={`relative h-24 rounded-2xl overflow-hidden transition-all ${currentTheme === t.id ? 'ring-4 ring-white shadow-xl scale-105' : 'opacity-70 hover:opacity-100'}`}
+                        className={`relative h-24 rounded-2xl overflow-hidden transition-all border border-white/10 ${currentTheme === t.id ? 'ring-4 ring-white shadow-xl scale-105' : 'opacity-70 hover:opacity-100'}`}
                        >
                          <div className={`absolute inset-0 ${t.bg}`} />
                          <span className="absolute bottom-2 right-2 text-white font-bold text-sm drop-shadow-md">{t.name}</span>

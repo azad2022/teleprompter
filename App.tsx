@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { AppRoute, Script, ThemeId, User } from './types';
 import { hasCompletedOnboarding, setOnboardingComplete, logoutUser, getTheme, saveTheme, getUser } from './services/storageService';
@@ -6,8 +7,10 @@ import Library from './components/Library';
 import ScriptGenerator from './components/ScriptGenerator';
 import Teleprompter from './components/Teleprompter';
 import LiveAssistant from './components/LiveAssistant';
+import MediaGallery from './components/MediaGallery';
 import Login from './components/Login';
 import AdminPanel from './components/AdminPanel';
+import GlobalAnnouncement from './components/GlobalAnnouncement';
 import { Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LocalizationProvider, useLocalization } from './contexts/LocalizationContext';
@@ -17,7 +20,8 @@ const THEMES: Record<ThemeId, string> = {
   natural_green: "bg-gradient-to-br from-[#134E5E] to-[#71B280]",
   creative_purple: "bg-gradient-to-br from-[#2E3192] to-[#1BFFFF]",
   energy_orange: "bg-gradient-to-br from-[#FF416C] to-[#FF4B2B]",
-  minimal_grey: "bg-gradient-to-br from-[#232526] to-[#414345]"
+  minimal_grey: "bg-gradient-to-br from-[#232526] to-[#414345]",
+  true_dark: "bg-black"
 };
 
 const MainContent: React.FC = () => {
@@ -107,6 +111,7 @@ const MainContent: React.FC = () => {
             onSelect={navigateToPrompter} 
             onCreateNew={() => setRoute(AppRoute.GENERATOR)} 
             onLiveAssistant={() => setRoute(AppRoute.LIVE_ASSISTANT)}
+            onGallery={() => setRoute(AppRoute.GALLERY)}
             onLogout={handleLogout}
             onAdminPanel={() => setRoute(AppRoute.ADMIN_PANEL)}
             currentTheme={currentTheme}
@@ -126,7 +131,7 @@ const MainContent: React.FC = () => {
         );
       
       case AppRoute.TELEPROMPTER:
-        if (!activeScript) return <Library user={user} onSelect={navigateToPrompter} onCreateNew={() => setRoute(AppRoute.GENERATOR)} onLiveAssistant={() => setRoute(AppRoute.LIVE_ASSISTANT)} onLogout={handleLogout} onAdminPanel={() => setRoute(AppRoute.ADMIN_PANEL)} currentTheme={currentTheme} onThemeChange={changeTheme} />;
+        if (!activeScript) return <Library user={user} onSelect={navigateToPrompter} onCreateNew={() => setRoute(AppRoute.GENERATOR)} onLiveAssistant={() => setRoute(AppRoute.LIVE_ASSISTANT)} onGallery={() => setRoute(AppRoute.GALLERY)} onLogout={handleLogout} onAdminPanel={() => setRoute(AppRoute.ADMIN_PANEL)} currentTheme={currentTheme} onThemeChange={changeTheme} />;
         return (
           <Teleprompter 
             script={activeScript} 
@@ -136,16 +141,23 @@ const MainContent: React.FC = () => {
 
       case AppRoute.LIVE_ASSISTANT:
         return <LiveAssistant onExit={() => setRoute(AppRoute.LIBRARY)} />;
+
+      case AppRoute.GALLERY:
+        return <MediaGallery onBack={() => setRoute(AppRoute.LIBRARY)} />;
       
       default:
         return <div>Not found</div>;
     }
   };
 
-  const isBlackBg = route === AppRoute.TELEPROMPTER || route === AppRoute.LIVE_ASSISTANT || route === AppRoute.ADMIN_PANEL || route === AppRoute.LOGIN;
+  const isBlackBg = route === AppRoute.TELEPROMPTER || route === AppRoute.LIVE_ASSISTANT || route === AppRoute.ADMIN_PANEL || route === AppRoute.GALLERY || route === AppRoute.LOGIN;
 
   return (
     <div className={`w-full h-screen font-sans overflow-hidden transition-all duration-1000 ${isBlackBg ? 'bg-black text-white' : THEMES[currentTheme] + ' text-white'}`}>
+      
+      {/* Global Announcements Overlay */}
+      <GlobalAnnouncement />
+
       <AnimatePresence mode='wait'>
         <motion.div 
           key={route}

@@ -1,13 +1,17 @@
-import { Script, ApiConfig, User, ThemeId, Language } from '../types';
+
+import { Script, ApiConfig, User, ThemeId, Language, TeleprompterSettings, GlobalMessage } from '../types';
 
 const STORAGE_KEY = 'teleprompter_scripts';
-const ONBOARDING_KEY = 'blogger_onboarding_complete_v2'; // Updated key version
+const ONBOARDING_KEY = 'blogger_onboarding_complete_v2'; 
 const TOUR_KEY = 'blogger_tour_complete';
 const USER_KEY = 'teleprompter_user';
 const API_CONFIGS_KEY = 'teleprompter_api_configs';
 const SYSTEM_API_CONFIG_KEY = 'teleprompter_system_api_config';
 const THEME_KEY = 'teleprompter_theme';
 const LANG_KEY = 'blogger_language';
+const GLOBAL_CAMERA_KEY = 'teleprompter_global_camera_settings';
+const GLOBAL_MSG_KEY = 'blogger_global_announcement';
+const SEEN_MSG_KEY = 'blogger_seen_announcements';
 
 // --- Scripts ---
 export const saveScript = (script: Script): void => {
@@ -107,4 +111,45 @@ export const saveLanguage = (lang: Language): void => {
 
 export const getLanguage = (): Language => {
   return (localStorage.getItem(LANG_KEY) as Language) || 'fa';
-}
+};
+
+// --- Global Camera Settings ---
+export const saveGlobalCameraSettings = (settings: Partial<TeleprompterSettings>): void => {
+  const current = getGlobalCameraSettings() || {};
+  const updated = { ...current, ...settings };
+  localStorage.setItem(GLOBAL_CAMERA_KEY, JSON.stringify(updated));
+};
+
+export const getGlobalCameraSettings = (): Partial<TeleprompterSettings> | null => {
+  const data = localStorage.getItem(GLOBAL_CAMERA_KEY);
+  return data ? JSON.parse(data) : null;
+};
+
+// --- Global Announcements (Admin -> Users) ---
+export const publishGlobalMessage = (msg: GlobalMessage | null): void => {
+  if (msg) {
+    localStorage.setItem(GLOBAL_MSG_KEY, JSON.stringify(msg));
+  } else {
+    localStorage.removeItem(GLOBAL_MSG_KEY);
+  }
+  // Dispatch event for same-browser testing
+  window.dispatchEvent(new Event('storage'));
+};
+
+export const getGlobalMessage = (): GlobalMessage | null => {
+  const data = localStorage.getItem(GLOBAL_MSG_KEY);
+  return data ? JSON.parse(data) : null;
+};
+
+export const markMessageAsSeen = (msgId: string): void => {
+  const seen = JSON.parse(localStorage.getItem(SEEN_MSG_KEY) || '[]');
+  if (!seen.includes(msgId)) {
+    seen.push(msgId);
+    localStorage.setItem(SEEN_MSG_KEY, JSON.stringify(seen));
+  }
+};
+
+export const hasSeenMessage = (msgId: string): boolean => {
+  const seen = JSON.parse(localStorage.getItem(SEEN_MSG_KEY) || '[]');
+  return seen.includes(msgId);
+};

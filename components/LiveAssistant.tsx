@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { getLiveAssistantResponse } from '../services/geminiService';
+import { saveMediaToDB } from '../services/mediaDb';
 import { ArrowRight, ArrowLeft, Mic, MicOff, Volume2, Sparkles, StopCircle, Radio, Trash2, MessageSquare, User, Bot, Settings, X, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocalization } from '../contexts/LocalizationContext';
@@ -32,6 +33,9 @@ const LiveAssistant: React.FC<Props> = ({ onExit }) => {
 
   // Refs
   const recognitionRef = useRef<any>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  
   const messagesRef = useRef<ChatMessage[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
@@ -67,12 +71,13 @@ const LiveAssistant: React.FC<Props> = ({ onExit }) => {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       const recognition = new SpeechRecognition();
-      recognition.continuous = false;
+      recognition.continuous = false; // Stop after one sentence to process
       recognition.lang = language === 'fa' ? 'fa-IR' : 'en-US';
       recognition.interimResults = true;
 
       recognition.onstart = () => {
-        setState('listening');
+        // We set state to listening in toggleListening, so this confirms it
+        startMediaRecording(); // Start recording actual audio file
         startVisualizer();
       };
 
@@ -83,27 +88,94 @@ const LiveAssistant: React.FC<Props> = ({ onExit }) => {
       };
 
       recognition.onend = () => {
+        stopMediaRecording(); // Stop recording actual audio
+        stopVisualizer();
+        // Check current state via setState callback or ref would be safer, but this effect runs when state changes?
+        // Actually, we should check logic in toggleListening.
+        // If it stopped naturally, we process.
+      };
+      
+      // Override onend to handle logic inside closure properly
+      recognitionRef.current = recognition;
+    } else {
+      alert("Browser doesn't support speech recognition.");
+    }
+    
+    return () => {
+        if (recognitionRef.current) {
+            recognitionRef.current.onend = null;
+            try { recognitionRef.current.abort(); } catch(e) {}
+        }
+    };
+  }, [language]); // Removed transcript/state from dependencies to avoid recreation loops
+
+  // Handle onend logic dynamically
+  useEffect(() => {
+    if (!recognitionRef.current) return;
+    
+    recognitionRef.current.onend = () => {
+        stopMediaRecording(); 
         stopVisualizer();
         if (state === 'listening') {
+             // If stopped while listening, it means silence or end of sentence
              if (transcript && transcript.trim().length > 0) {
                  handleProcessQuery(transcript);
              } else {
                  setState('idle');
              }
         }
-      };
+    };
 
-      recognition.onerror = (event: any) => {
-        console.error(event.error);
+    recognitionRef.current.onerror = (event: any) => {
+        // Ignore 'aborted' as it happens on manual stop or restart
+        if (event.error === 'aborted') return;
+        
+        console.error("Speech Error:", event.error);
+        stopMediaRecording();
         stopVisualizer();
         setState('idle');
-      };
+    };
+  }, [state, transcript]);
 
-      recognitionRef.current = recognition;
-    } else {
-      alert("Browser doesn't support speech recognition.");
-    }
-  }, [transcript, state, language]);
+  // Media Recorder Logic (To save audio file)
+  const startMediaRecording = async () => {
+     try {
+         const stream = await navigator.mediaDevices.getUserMedia({
+             audio: { deviceId: selectedMicId ? { exact: selectedMicId } : undefined }
+         });
+         const mediaRecorder = new MediaRecorder(stream);
+         mediaRecorderRef.current = mediaRecorder;
+         audioChunksRef.current = [];
+
+         mediaRecorder.ondataavailable = (event) => {
+             audioChunksRef.current.push(event.data);
+         };
+
+         mediaRecorder.onstop = async () => {
+             const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+             // Save if it's substantial
+             if (audioBlob.size > 1000) {
+                try {
+                    await saveMediaToDB(audioBlob, 'audio', `Audio Session - ${new Date().toLocaleString()}`);
+                } catch (e) {
+                    console.error("Error saving audio", e);
+                }
+             }
+             // Stop tracks
+             stream.getTracks().forEach(track => track.stop());
+         };
+
+         mediaRecorder.start();
+     } catch (e) {
+         console.error("Media Recorder Error:", e);
+     }
+  };
+
+  const stopMediaRecording = () => {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+          mediaRecorderRef.current.stop();
+      }
+  };
 
   // Visualizer Logic
   const startVisualizer = async () => {
@@ -172,9 +244,17 @@ const LiveAssistant: React.FC<Props> = ({ onExit }) => {
   const toggleListening = () => {
     if (state === 'idle' || state === 'speaking') {
       setTranscript('');
-      recognitionRef.current?.start();
+      setState('listening'); // Explicitly set state immediately
+      try {
+        recognitionRef.current?.start();
+      } catch (e) {
+          // If already started or error
+          console.log("Recognition start error (might be already active)", e);
+      }
     } else if (state === 'listening') {
-      recognitionRef.current?.stop();
+      setState('idle'); // Force idle state
+      try { recognitionRef.current?.stop(); } catch(e) {}
+      stopMediaRecording();
     }
   };
 
@@ -311,8 +391,9 @@ const LiveAssistant: React.FC<Props> = ({ onExit }) => {
                              ))}
                         </div>
                         <p className="text-xl md:text-2xl font-bold text-white leading-relaxed" style={{ direction: dir }}>
-                            {transcript || "..."}
+                            {transcript || "Listening..."}
                         </p>
+                        <p className="text-xs text-white/30 mt-2">Audio is being recorded to Gallery</p>
                     </motion.div>
                 )}
 

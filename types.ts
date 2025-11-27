@@ -8,6 +8,16 @@ export interface Script {
   lastUsedSettings?: TeleprompterSettings;
 }
 
+export interface MediaItem {
+  id: string;
+  type: 'video' | 'audio';
+  title: string;
+  blob: Blob; // Stored in IndexedDB
+  createdAt: number;
+  duration?: string;
+  size: number;
+}
+
 export interface TeleprompterSettings {
   scrollSpeed: number; // 0-100
   fontSize: number; // px
@@ -25,6 +35,32 @@ export interface TeleprompterSettings {
   cameraContrast?: number; // 100 default
   cameraZoom?: number; // 1 default
   cameraMirrored?: boolean; // true default
+  
+  // Advanced Camera Processing
+  cameraFilters?: {
+    saturation: number; // 100 default
+    sepia: number; // 0 default
+    blur: number; // 0 default
+    grayscale: number; // 0 default
+    hue: number; // 0 default
+  };
+  enableBeautyMode?: boolean; // Preset wrapper
+  enableAudioEnhancement?: boolean; // Noise suppression
+  
+  // System
+  enablePiP?: boolean; // Floating View Toggle
+  enableVoiceControl?: boolean; // Voice Commands Toggle
+}
+
+export interface GlobalMessage {
+  id: string;
+  title: string;
+  message: string;
+  mediaType: 'none' | 'image' | 'video';
+  mediaUrl?: string;
+  createdAt: number;
+  isActive: boolean;
+  actionLink?: string; // Optional link button
 }
 
 export enum AppRoute {
@@ -36,7 +72,8 @@ export enum AppRoute {
   LIBRARY = 'library',
   LIVE_ASSISTANT = 'live_assistant',
   ADMIN_PANEL = 'admin_panel',
-  USER_SETTINGS = 'user_settings'
+  USER_SETTINGS = 'user_settings',
+  GALLERY = 'gallery'
 }
 
 export interface AIRequestParams {
@@ -65,7 +102,7 @@ export interface User {
   photoUrl?: string;
 }
 
-export type ThemeId = 'classic_blue' | 'natural_green' | 'creative_purple' | 'energy_orange' | 'minimal_grey';
+export type ThemeId = 'classic_blue' | 'natural_green' | 'creative_purple' | 'energy_orange' | 'minimal_grey' | 'true_dark';
 
 export interface Theme {
   id: ThemeId;
