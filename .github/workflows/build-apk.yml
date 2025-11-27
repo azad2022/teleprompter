@@ -1,0 +1,38 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      run: npm install
+        
+    - name: Build project
+      run: npm run build
+      
+    - name: Convert PWA to APK
+      uses: cezaraugusto/action-pwa-to-apk@v1
+      with:
+        build-folder: 'dist'
+        app-name: 'Teleprompter App'
+        app-package: 'com.teleprompter.app'
+        
+    - name: Upload APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: teleprompter-apk
+        path: ./*.apk
